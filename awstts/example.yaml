@@ -20,6 +20,7 @@
 
 tts: Text-to-speech project for the educational purposes
 script:
+    - exec: echo command-line
     - say: 
         - Amazon Polly is a service that turns text into lifelike speech. Polly lets you create
         - applications that talk, enabling you to build entirely new categories of speech-enabled products.

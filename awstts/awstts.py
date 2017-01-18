@@ -87,8 +87,15 @@ def pause():
     except SyntaxError:
         pass
 
+
+def execute(cmd):
+    ret = call(cmd.split())
+    assert ret == 0
+
+
 def error(text):
     sys.exit('Error: ' + text)
+
 
 def execute_script(items):
 
@@ -100,6 +107,8 @@ def execute_script(items):
     counter = 1
     for item in items:
         if item == 'pause':
+            pass
+        elif item.has_key('exec'):
             pass
         elif item.has_key('say'):
             synthesize(item['say'], counter)
@@ -115,6 +124,8 @@ def execute_script(items):
     for item in items:
         if item == 'pause':
             pause()
+        elif item.has_key('exec'):
+            execute(item['exec'])
         elif item.has_key('say'):
             say(counter)
             counter = counter + 1
@@ -135,7 +146,7 @@ def create_sample_yaml_tts(filename):
     contents = read_file(example_file)
     write_file(filename, contents)
     print 'Sample yaml created.'
-    return 0   
+    return 0
 
 def main():
 
