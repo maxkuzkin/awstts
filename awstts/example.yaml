@@ -21,23 +21,19 @@
 tts: Text-to-speech project for the educational purposes
 script:
     - exec: echo command-line
-    - say: 
-        - Amazon Polly is a service that turns text into lifelike speech. Polly lets you create
-        - applications that talk, enabling you to build entirely new categories of speech-enabled products.
+    - Amazon Polly is a service that turns text into lifelike speech. Polly lets you create
+    - applications that talk, enabling you to build entirely new categories of speech-enabled products.
     - voice: Amy
-    - say:
-        - Hello! Welcome to the text to speech test.
-        - <break time="1s"/> 
-        - I can speak <prosody volume="x-loud">very loudly</prosody>, or I can speak <prosody volume="x-soft">very quietly</prosody>. 
-        - I can speak <prosody rate="x-slow">really slowly</prosody>, or  I can speak <prosody rate="x-fast">really fast</prosody>
-        - For sure. 
-    - pause
+    - Hello! Welcome to the text to speech test.
+    - <break time="1s"/> 
+    - I can speak <prosody volume="x-loud">very loudly</prosody>, or I can speak <prosody volume="x-soft">very quietly</prosody>. 
+    - I can speak <prosody rate="x-slow">really slowly</prosody>, or  I can speak <prosody rate="x-fast">really fast</prosody>
+    - For sure. 
+    - delay: 0.5
     - voice: Brian
-    - say:
-        - Another voice is here. My name is Brian.
-        - <emphasis level='strong'>Hello</emphasis> world how are you?
-        - I can speak in a <prosody pitch="high">higher pitched voice</prosody>, 
-        - or I can speak <prosody pitch="low">in a lower pitched voice</prosody>
-        - <emphasis level='strong'>Hello</emphasis> world how are you?
-    - pause
+    - Another voice is here. My name is Brian.
+    - <emphasis level='strong'>Hello</emphasis> world how are you?
+    - I can speak in a <prosody pitch="high">higher pitched voice</prosody>, 
+    - or I can speak <prosody pitch="low">in a lower pitched voice</prosody>
+    - <emphasis level='strong'>Hello</emphasis> world how are you?
     

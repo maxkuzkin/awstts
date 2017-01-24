@@ -1,8 +1,10 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 import os
 import sys
 import yaml
+import time
 
 from collections import OrderedDict
 from subprocess import call
@@ -13,6 +15,7 @@ CACHE_DIR = '.tts'
 TTS_VOICE = 'Amy'
 FORCE_SYNTHESIZE = False
 START_INDEX = 1
+PROSODY = "<prosody rate='1.0'>"
 
 
 def read_file(filename):
@@ -39,9 +42,8 @@ def get_filenames(counter):
         os.path.join(CACHE_DIR, '{counter}.cache'.format(counter=counter))
         )
 
-def synthesize(text_array, counter):
+def synthesize(text, counter):
 
-    text = ' '.join(str(x) for x in text_array)
     cached_text = TTS_VOICE + ': ' + text
 
     (filename_mp3, filename_text) = get_filenames(counter)
@@ -57,7 +59,7 @@ def synthesize(text_array, counter):
         'aws',
         'polly',
         'synthesize-speech',
-        '--text', '<speak>' + text + '</speak>',
+        '--text', '<speak> ' + PROSODY + text + '</prosody> </speak>',
         '--text-type', 'ssml',
         '--voice-id', TTS_VOICE,
         '--output-format', 'mp3',
@@ -76,6 +78,7 @@ def say(counter):
     filename_mp3 = os.path.join(CACHE_DIR, '{counter}.mp3'.format(counter=counter))
     ret = call([
         'afplay',
+        '-q', '1',
         filename_mp3
         ])
     assert ret == 0
@@ -93,6 +96,11 @@ def execute(cmd):
     assert ret == 0
 
 
+def delay(secs):
+    print 'Waiting for %2.2f seconds...' % secs
+    time.sleep(secs)
+
+
 def error(text):
     sys.exit('Error: ' + text)
 
@@ -101,36 +109,63 @@ def execute_script(items):
 
     global TTS_VOICE
     global START_INDEX
+    global PROSODY
+
+    processed_items = []
+    current_item = []
+    for item in items:
+        if isinstance(item, dict):
+            if len(current_item):
+                say_text = ' '.join(str(x) for x in current_item)
+                processed_items.append( { 'say' : say_text } )
+                current_item = []
+            processed_items.append( item )
+        elif isinstance(item, basestring):
+            current_item.append(item)
+        else:
+            error('unknown item in the script')
+
+    items = processed_items
 
     print
     print 'Synthesizing:'
-    counter = 1
+    counter = 0
     for item in items:
+
+        counter = counter + 1
         if item == 'pause':
             pass
         elif item.has_key('exec'):
             pass
         elif item.has_key('say'):
             synthesize(item['say'], counter)
-            counter = counter + 1
         elif item.has_key('voice'):
             TTS_VOICE = item['voice']
+        elif item.has_key('prosody'):
+            PROSODY = '<prosody {arg}>'.format(arg=item['prosody'])
+        elif item.has_key('delay'):
+            pass
         else:
             error('unknown script item: ' + str(item))
 
     print
     print 'Executing:'
-    counter = START_INDEX
-    for item in items:
+    counter = START_INDEX - 1
+    for item in items[counter:]:
+        counter = counter + 1
         if item == 'pause':
             pause()
         elif item.has_key('exec'):
             execute(item['exec'])
         elif item.has_key('say'):
             say(counter)
-            counter = counter + 1
         elif item.has_key('voice'):
             pass
+        elif item.has_key('prosody'):
+            pass
+        elif item.has_key('delay'):
+            secs = float(item['delay'])
+            delay(secs)
         else:
             error('unknown script item')
 
@@ -155,6 +190,7 @@ def main():
     global TTS_VOICE
     global FORCE_SYNTHESIZE
     global START_INDEX
+    global PROSODY
 
     parser = OptionParser()
     parser.add_option('-i', '--input', dest='script_file', default=SCRIPT_FILE,
@@ -169,6 +205,8 @@ def main():
         help='Start saying phrases from the specified index. Default: ' + str(START_INDEX))
     parser.add_option('-c', '--create', dest='sample_yaml_tts', action='store_true',
         help='Initialize sample yaml script file')
+    parser.add_option('-p', '--prosody', dest='prosody', default=PROSODY,
+        help='Prosody attributes to be used by default (unless pverriden in the script). Default: ' + str(PROSODY))
 
     (options, args) = parser.parse_args()
 
@@ -179,7 +217,8 @@ def main():
     CACHE_DIR = options.cache_dir
     TTS_VOICE = options.tts_voice
     FORCE_SYNTHESIZE = options.force_synthesize
-    START_INDEX = options.start_index
+    START_INDEX = int(options.start_index)
+    PROSODY = options.prosody
 
     print 'Script: {script}'.format(script=SCRIPT_FILE)
     stream = open(SCRIPT_FILE, 'r')

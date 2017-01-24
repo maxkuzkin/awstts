@@ -17,7 +17,7 @@ CGEventRef myCGEventCallback(CGEventTapProxy proxy, CGEventType type, CGEventRef
         printf("KeyDown: %d\n", keycode);
     }
     else if (keycode == waitforit) {
-        printf(" Done.");
+        printf(" Done.\n");
         fflush(stdout);
         exit(0);
     }
