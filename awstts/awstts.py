@@ -5,6 +5,7 @@ import os
 import sys
 import yaml
 import time
+import glob
 
 from collections import OrderedDict
 from subprocess import call
@@ -123,7 +124,12 @@ def execute_script(items):
         elif isinstance(item, basestring):
             current_item.append(item)
         else:
-            error('unknown item in the script')
+            error('unknown item in the script: ' + item)
+
+    if len(current_item):
+        say_text = ' '.join(str(x) for x in current_item)
+        processed_items.append( { 'say' : say_text } )
+        current_item = []
 
     items = processed_items
 
@@ -220,8 +226,18 @@ def main():
     START_INDEX = int(options.start_index)
     PROSODY = options.prosody
 
-    print 'Script: {script}'.format(script=SCRIPT_FILE)
+
+    if not os.path.exists(SCRIPT_FILE):
+        print '{script} not found, looking for the *.yaml file in the current folder...'.format(script=SCRIPT_FILE)
+        files = glob.glob("*.yaml")
+        if len(files) == 1:
+            SCRIPT_FILE = files[0]
+        else:
+            error('Failed to find script file to execute')
+
     stream = open(SCRIPT_FILE, 'r')
+    print 'Script: {script}'.format(script=SCRIPT_FILE)
+
     script = yaml.load(stream)
     stream.close()
     script_items = script.items()
